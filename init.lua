@@ -219,11 +219,43 @@ do
   -- or just use <C-\><C-n> to exit terminal mode
   vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
+  -- Line numbers are just noise in a terminal buffer.
+  --  NOTE: `opt_local` matters here - plain `vim.opt` would disable numbers globally.
+  vim.api.nvim_create_autocmd('TermOpen', {
+    desc = 'Disable line numbers in terminal buffers',
+    group = vim.api.nvim_create_augroup('kickstart-term-open', { clear = true }),
+    callback = function()
+      vim.opt_local.number = false
+      vim.opt_local.relativenumber = false
+    end,
+  })
+
+  -- Open a small terminal split along the bottom of the screen
+  vim.keymap.set('n', '<leader>tt', function()
+    vim.cmd.vnew()
+    vim.cmd.term()
+    vim.cmd.wincmd 'J'
+    vim.api.nvim_win_set_height(0, 15)
+  end, { desc = '[T]oggle [T]erminal split' })
+
   -- TIP: Disable arrow keys in normal mode
   vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
   vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
   vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
   vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+
+  -- Keep the cursor centered when scrolling by half a screen
+  vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Scroll down half a screen, centered' })
+  vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Scroll up half a screen, centered' })
+
+  -- Keep the cursor centered when jumping between search matches.
+  --  `zv` also opens just enough folds to reveal the match.
+  vim.keymap.set('n', 'n', 'nzzzv', { desc = 'Next search match, centered' })
+  vim.keymap.set('n', 'N', 'Nzzzv', { desc = 'Previous search match, centered' })
+
+  -- Paste over a selection without clobbering the unnamed register,
+  --  so the same text can be pasted repeatedly.
+  vim.keymap.set('x', 'p', '"_dP', { desc = 'Paste over selection, keeping the register' })
 
   -- Keybinds to make split navigation easier.
   --  Use CTRL+<hjkl> to switch between windows
@@ -385,6 +417,8 @@ do
   vim.pack.add { gh 'folke/tokyonight.nvim' }
   ---@diagnostic disable-next-line: missing-fields
   require('tokyonight').setup {
+    -- Uncomment to let the terminal background show through
+    -- transparent = true,
     styles = {
       comments = { italic = false }, -- Disable italics in comments
     },
