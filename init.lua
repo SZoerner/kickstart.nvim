@@ -244,6 +244,9 @@ do
 
   -- Line numbers are just noise in a terminal buffer.
   --  NOTE: `opt_local` matters here - plain `vim.opt` would disable numbers globally.
+  --  This applies to `:terminal`, which is occasionally handy - but for interactive
+  --  shell work a tmux pane is the better tool, and `<C-hjkl>` already moves into
+  --  one thanks to `vim-tmux-navigator`.
   vim.api.nvim_create_autocmd('TermOpen', {
     desc = 'Disable line numbers in terminal buffers',
     group = vim.api.nvim_create_augroup('kickstart-term-open', { clear = true }),
@@ -252,14 +255,6 @@ do
       vim.opt_local.relativenumber = false
     end,
   })
-
-  -- Open a small terminal split along the bottom of the screen
-  vim.keymap.set('n', '<leader>tt', function()
-    vim.cmd.vnew()
-    vim.cmd.term()
-    vim.cmd.wincmd 'J'
-    vim.api.nvim_win_set_height(0, 15)
-  end, { desc = '[T]oggle [T]erminal split' })
 
   -- TIP: Disable arrow keys in normal mode
   vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
