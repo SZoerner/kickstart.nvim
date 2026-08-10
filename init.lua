@@ -296,14 +296,13 @@ do
   vim.keymap.set('v', '<leader>x', ':lua<CR>', { desc = 'E[x]ecute the selection as Lua' })
   vim.keymap.set('n', '<leader>X', '<cmd>source %<CR>', { desc = 'E[X]ecute (source) the current file' })
 
-  -- Keybinds to make split navigation easier.
-  --  Use CTRL+<hjkl> to switch between windows
-  --
-  --  See `:help wincmd` for a list of all window commands
-  vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-  vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-  vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-  vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+  -- NOTE: Split navigation with CTRL+<hjkl> is set up by `vim-tmux-navigator`
+  --  in the UI section below, so the same keys also move between tmux panes.
+  --  Without that plugin, the built-in equivalents would be:
+  -- vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+  -- vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+  -- vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+  -- vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
   -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
   -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -471,6 +470,14 @@ do
   -- Highlight todo, notes, etc in comments
   vim.pack.add { gh 'folke/todo-comments.nvim' }
   require('todo-comments').setup { signs = false }
+
+  -- Move between Neovim splits and tmux panes with the same CTRL+<hjkl> keys.
+  --  The tmux side of this plugin is configured in `~/.tmux.conf`; both halves
+  --  are needed for the handoff to work.
+  --
+  --  The plugin defines <C-h/j/k/l> and <C-\> itself, so there is nothing to map
+  --  here. Set `vim.g.tmux_navigator_no_mappings = 1` before this to opt out.
+  vim.pack.add { gh 'christoomey/vim-tmux-navigator' }
 
   -- [[ mini.nvim ]]
   --  A collection of various small independent plugins/modules
@@ -1030,7 +1037,38 @@ do
 end
 
 -- ============================================================
--- SECTION 10: OPTIONAL EXAMPLES / NEXT STEPS
+-- SECTION 10: REPL / LISP DEVELOPMENT
+-- conjure, vim-jack-in, vim-dispatch-neovim
+-- ============================================================
+do
+  -- [[ Interactive REPL development ]]
+  --  Conjure provides evaluation, docs and completion against a running REPL.
+  --  `vim-jack-in` adds `:Clj`/`:Lein`/`:Bb` to start a REPL from inside Neovim,
+  --  and needs a dispatch implementation - `vim-dispatch-neovim` - to run it.
+  --
+  --  See `:help conjure`. The mappings all live behind the `<localleader>` prefix
+  --  (e.g. `<localleader>ee` to eval the form under the cursor).
+
+  -- Restrict Conjure to the filetypes we actually REPL into.
+  --  NOTE: This must be set *before* the plugin loads. The default list is much
+  --  broader and includes `lua`, which would otherwise attach Conjure (and its
+  --  <localleader> mappings) to this config file itself.
+  vim.g['conjure#filetypes'] = { 'clojure', 'fennel', 'python' }
+
+  vim.pack.add {
+    gh 'Olical/conjure',
+    gh 'clojure-vim/vim-jack-in',
+    -- `vim-jack-in` starts the REPL through dispatch.vim's `:Start`, and
+    --  `vim-dispatch-neovim` is only the adapter that teaches dispatch.vim to use
+    --  Neovim's terminal. Both are needed: without `vim-dispatch`, `:Clj` warns
+    --  and falls back to a bare `termopen()` in a new tab.
+    gh 'tpope/vim-dispatch',
+    gh 'radenling/vim-dispatch-neovim',
+  }
+end
+
+-- ============================================================
+-- SECTION 11: OPTIONAL EXAMPLES / NEXT STEPS
 -- kickstart.plugins.* examples
 -- ============================================================
 do
