@@ -124,6 +124,24 @@ do
   --  See `:help 'clipboard'`
   vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 
+  -- ALTERNATIVE clipboard strategy: keep Neovim's registers independent of the
+  --  system clipboard, and reach for the `+` register explicitly instead.
+  --
+  --  The setting above is convenient, but it means *every* delete and change
+  --  overwrites the system clipboard too - so `diw` silently destroys whatever
+  --  was copied from the browser. The approach below trades a leader press for
+  --  never having the two clipboards interfere.
+  --
+  --  To switch: comment out the `vim.schedule` line above and uncomment these.
+  -- vim.keymap.set('n', '<leader>y', '"+y', { desc = '[Y]ank to system clipboard' })
+  -- vim.keymap.set('v', '<leader>y', '"+y', { desc = '[Y]ank to system clipboard' })
+  -- vim.keymap.set('n', '<leader>yy', '"+yy', { desc = '[Y]ank line to system clipboard' })
+  -- vim.keymap.set('n', '<leader>Y', '"+yg_', { desc = '[Y]ank to end of line to system clipboard' })
+  -- vim.keymap.set('n', '<leader>p', '"+p', { desc = '[P]aste from system clipboard' })
+  -- vim.keymap.set('v', '<leader>p', '"+p', { desc = '[P]aste from system clipboard' })
+  -- vim.keymap.set('n', '<leader>P', '"+P', { desc = '[P]aste before from system clipboard' })
+  -- vim.keymap.set('v', '<leader>P', '"+P', { desc = '[P]aste before from system clipboard' })
+
   -- Enable break indent
   vim.o.breakindent = true
 
@@ -209,6 +227,11 @@ do
     },
   }
 
+  -- Show the diagnostic under the cursor without moving.
+  --  Jumping with `]d`/`[d` opens the float automatically (see `jump.on_jump` above),
+  --  this is for reading a diagnostic where you already are.
+  vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
+
   vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
   -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
@@ -256,6 +279,22 @@ do
   -- Paste over a selection without clobbering the unnamed register,
   --  so the same text can be pasted repeatedly.
   vim.keymap.set('x', 'p', '"_dP', { desc = 'Paste over selection, keeping the register' })
+
+  -- Save the current buffer.
+  --  Uses `<cmd>` rather than `<Esc>:w<CR>` so insert mode is preserved.
+  vim.keymap.set({ 'n', 'i' }, '<C-s>', '<cmd>write<CR>', { desc = 'Save the current buffer' })
+
+  -- Close the current window.
+  --  NOTE: Normal mode only - in insert mode <C-c> is the built-in "abort insert",
+  --  and mapping it here would make a mistyped <C-c> close the window.
+  vim.keymap.set('n', '<C-c>', '<cmd>quit<CR>', { desc = 'Close the current window' })
+
+  -- Live-reload Lua while hacking on this config.
+  --  `:lua` on a range executes it, so <leader>x runs the current line in normal
+  --  mode and the selected lines in visual mode.
+  vim.keymap.set('n', '<leader>x', '<cmd>.lua<CR>', { desc = 'E[x]ecute the current line as Lua' })
+  vim.keymap.set('v', '<leader>x', ':lua<CR>', { desc = 'E[x]ecute the selection as Lua' })
+  vim.keymap.set('n', '<leader>X', '<cmd>source %<CR>', { desc = 'E[X]ecute (source) the current file' })
 
   -- Keybinds to make split navigation easier.
   --  Use CTRL+<hjkl> to switch between windows
