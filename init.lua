@@ -773,9 +773,25 @@ do
   ---@type table<string, vim.lsp.Config>
   local servers = {
     -- clangd = {},
+    bashls = { filetypes = { 'sh' } }, -- Don't attach to `zsh` or `bash` filetypes we don't lint
+    clojure_lsp = {}, -- Complements Conjure: navigation, rename, diagnostics
     gopls = {},
+    jdtls = {},
     pyright = {},
     rust_analyzer = {},
+    --  NOTE: `.yml` already resolves to the `yaml` filetype, so no `filetypes` override is needed.
+    yamlls = {
+      settings = {
+        redhat = { telemetry = { enable = false } },
+        yaml = {
+          completion = true,
+          disableAdditionalProperties = true,
+          format = { enable = true },
+          validate = true,
+          hover = true,
+        },
+      },
+    },
     --
     -- Some languages (like typescript) have entire language plugins that can be useful:
     --    https://github.com/pmizio/typescript-tools.nvim
@@ -842,7 +858,14 @@ do
   -- You can press `g?` for help in this menu.
   local ensure_installed = vim.tbl_keys(servers or {})
   vim.list_extend(ensure_installed, {
-    -- You can add other tools here that you want Mason to install
+    -- Formatters used by `conform.nvim` in the formatting section below.
+    --  These have to be installed for format-on-save to actually do anything.
+    'isort', -- Python import sorting
+    'black', -- Python formatting
+    'prettierd', -- Faster, daemonized prettier
+    'prettier', -- Fallback when prettierd is unavailable
+    --  NOTE: `rustfmt` is deliberately absent - it is not a Mason package and
+    --  ships with the Rust toolchain instead (`rustup component add rustfmt`).
   })
 
   require('mason-tool-installer').setup { ensure_installed = ensure_installed }
